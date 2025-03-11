@@ -10,7 +10,7 @@ import { icons, images } from "@/constants";
 import InputField from "@/components/InputField";
 import React from "react";
 import CustomButton from "@/components/CustomButton";
-import { Link, router } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import OAuth from "@/components/OAuth";
 import { useSignUp } from "@clerk/clerk-expo";
 import ReactNativeModal from "react-native-modal";
@@ -25,6 +25,8 @@ type VerificationState = {
 
 const SignUp = () => {
   const { isLoaded, signUp, setActive } = useSignUp();
+  const router = useRouter();
+
   const [form, setForm] = React.useState({
     name: "",
     email: "",
@@ -44,6 +46,7 @@ const SignUp = () => {
       await signUp.create({
         emailAddress: form.email,
         password: form.password,
+        firstName: form.name,
       });
 
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
@@ -90,7 +93,6 @@ const SignUp = () => {
             }),
           });
         } catch (fetchError) {
-          // Log the error but don’t fail the flow, since Clerk verification succeeded
           console.error("fetchAPI failed but continuing:", fetchError);
         }
 
@@ -237,29 +239,6 @@ const SignUp = () => {
             {verification.error}
           </Text>
         )}
-
-        <ReactNativeModal isVisible={verification.state === "success"}>
-          <View className="bg-white px-7 py-9 rounded-2xl min-h-[300px]">
-            <Image
-              source={images.check}
-              className="w-[110px] h-[110px] mx-auto my-5"
-            />
-            <Text className="text-3xl font-JakartaBold text-center">
-              Verified
-            </Text>
-            <Text className="text-base text-grey-400 font-Jakarta text-center mt-2">
-              Your account has been created successfully
-            </Text>
-            <TouchableOpacity
-              onPress={() => router.replace("/(root)/(tabs)/home")}
-              className="mt-5"
-            >
-              <Text className="text-center text-black text-lg font-JakartaBold">
-                → Home
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </ReactNativeModal>
       </View>
     </ScrollView>
   );

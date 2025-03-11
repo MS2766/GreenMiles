@@ -33,7 +33,7 @@ const SignIn = () => {
     } catch (err) {
       console.error(JSON.stringify(err, null, 2));
     }
-  }, [isLoaded, form.email, form.password]);
+  }, [isLoaded, signIn, form.email, form.password, setActive, router]);
 
   return (
     <ScrollView className="flex-1 bg-white">
