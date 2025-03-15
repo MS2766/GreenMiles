@@ -8,6 +8,7 @@ import "../global.css";
 
 import { ClerkProvider, ClerkLoaded } from "@clerk/clerk-expo";
 import { createTokenCache } from "@/lib/auth";
+import React from "react";
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 

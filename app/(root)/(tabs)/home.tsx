@@ -15,6 +15,8 @@ import { useState, useEffect } from "react";
 import { icons } from "@/constants";
 import * as Location from "expo-location";
 import GoogleTextInput from "@/components/GoogleTextInput";
+import { router } from "expo-router";
+import React from "react";
 
 const recentRides = [
   {
@@ -167,6 +169,20 @@ export default function Page() {
     setTimeout(() => setRefreshing(false), 1000);
   };
 
+  const handleRideAgain = (ride: (typeof recentRides)[0]) => {
+    router.push({
+      pathname: "/rides",
+      params: {
+        fromAddress: ride.origin_address,
+        fromLatitude: ride.origin_latitude,
+        fromLongitude: ride.origin_longitude,
+        toAddress: ride.destination_address,
+        toLatitude: ride.destination_latitude,
+        toLongitude: ride.destination_longitude,
+      },
+    });
+  };
+
   const renderHeader = () => (
     <View className="p-5 bg-white shadow-sm shadow-neutral-200">
       <Text className="text-2xl text-center font-JakartaBold text-gray-800">
@@ -180,18 +196,19 @@ export default function Page() {
             ? { latitude: location.latitude, longitude: location.longitude }
             : undefined
         }
-        onPlaceSelected={(data, details) => {
-          if (details?.location) {
-            setLocation({
-              latitude: details.location.latitude,
-              longitude: details.location.longitude,
-              altitude: 0,
-              accuracy: 0,
-              altitudeAccuracy: 0,
-              heading: 0,
-              speed: 0,
+        onPlaceSelected={(placeData) => {
+          if (location && placeData.latitude && placeData.longitude) {
+            router.push({
+              pathname: "/rides",
+              params: {
+                fromAddress: locationAddress,
+                fromLatitude: location.latitude.toString(),
+                fromLongitude: location.longitude.toString(),
+                toAddress: placeData.description,
+                toLatitude: placeData.latitude.toString(),
+                toLongitude: placeData.longitude.toString(),
+              },
             });
-            setLocationAddress(data.description);
           }
         }}
       />
@@ -204,7 +221,11 @@ export default function Page() {
         </View>
         <View style={{ height: 200, width: "100%" }}>
           {location ? (
-            <Map latitude={location.latitude} longitude={location.longitude} />
+            <Map
+              markers={[
+                { latitude: location.latitude, longitude: location.longitude },
+              ]}
+            />
           ) : (
             <View className="flex-1 items-center justify-center">
               <ActivityIndicator size="large" color="#0000ff" />
@@ -224,16 +245,27 @@ export default function Page() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: "white" }}
+      className="flex-1 bg-grey-100"
+    >
       <FlatList
         data={recentRides?.slice(0, 5)}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => console.log(`Navigate to ride ${item.ride_id}`)}
-          >
-            <RideCard ride={item} />
-          </TouchableOpacity>
+          <View>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => console.log(`Navigate to ride ${item.ride_id}`)}
+            >
+              <RideCard ride={item} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleRideAgain(item)}
+              className="bg-black py-2 px-4 rounded-lg mt-2 self-center"
+            >
+              <Text className="text-white font-JakartaMedium">Ride Again?</Text>
+            </TouchableOpacity>
+          </View>
         )}
         keyExtractor={(item) => item.ride_id}
         ListHeaderComponent={renderHeader}
@@ -243,7 +275,7 @@ export default function Page() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="always"
       />
     </SafeAreaView>
   );

@@ -7,16 +7,19 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
+  Keyboard,
 } from "react-native";
 import axios from "axios";
+import React from "react";
 
+// Haversine formula to calculate distance
 const getDistance = (
   lat1: number,
   lon1: number,
   lat2: number,
   lon2: number,
 ): number => {
-  const R = 6371; // Earth radius in kilometers
+  const R = 6371;
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLon = (lon2 - lon1) * (Math.PI / 180);
   const a =
@@ -34,7 +37,12 @@ interface GoogleTextInputProps {
   initialLocation?: string;
   containerStyle?: any;
   textInputBackgroundColor?: string;
-  onPlaceSelected?: (data: any, details: any) => void;
+  onPlaceSelected?: (data: {
+    description: string;
+    placeId: string;
+    latitude: number;
+    longitude: number;
+  }) => void;
   userLocation?: { latitude: number; longitude: number };
 }
 
@@ -48,7 +56,26 @@ const GoogleTextInput = ({
 }: GoogleTextInputProps) => {
   const [query, setQuery] = useState(initialLocation);
   const [suggestions, setSuggestions] = useState<any[]>([]);
-  const [isFocused, setIsFocused] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => {
+        setIsKeyboardVisible(true);
+      },
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        setIsKeyboardVisible(false);
+      },
+    );
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (!query || query.length < 2 || !userLocation) {
@@ -78,7 +105,7 @@ const GoogleTextInput = ({
           {
             headers: {
               "Content-Type": "application/json",
-              "X-Goog-Api-Key": process.env.EXPO_PUBLIC_STATIC_MAPS_KEY,
+              "X-Goog-Api-Key": process.env.EXPO_PUBLIC_STATIC_MAPS_KEY || "",
             },
           },
         );
@@ -96,8 +123,10 @@ const GoogleTextInput = ({
                 `https://places.googleapis.com/v1/places/${suggestion.placePrediction.placeId}`,
                 {
                   headers: {
-                    "X-Goog-Api-Key": process.env.EXPO_PUBLIC_STATIC_MAPS_KEY,
-                    "X-Goog-FieldMask": "id,displayName,location",
+                    "X-Goog-Api-Key":
+                      process.env.EXPO_PUBLIC_STATIC_MAPS_KEY || "",
+                    "X-Goog-FieldMask":
+                      "id,displayName,location,formattedAddress",
                   },
                 },
               );
@@ -127,7 +156,12 @@ const GoogleTextInput = ({
         );
         setSuggestions(sortedSuggestions);
       } catch (error) {
-        console.log("Autocomplete Error:", error.response?.data || error);
+        console.log(
+          "Autocomplete Error:",
+          axios.isAxiosError(error)
+            ? error.response?.data || error.message
+            : error,
+        );
         setSuggestions([]);
       }
     };
@@ -140,14 +174,14 @@ const GoogleTextInput = ({
     const placeData = {
       description: suggestion.placePrediction.text.text,
       placeId: suggestion.placePrediction.placeId,
+      latitude: suggestion.details?.location?.latitude || 0,
+      longitude: suggestion.details?.location?.longitude || 0,
     };
-    const details = suggestion.details || null;
-    console.log("Selected Place:", { placeData, details });
-    onPlaceSelected?.(placeData, details);
+    onPlaceSelected?.(placeData);
 
     setQuery(suggestion.placePrediction.text.text);
     setSuggestions([]);
-    setIsFocused(false);
+    Keyboard.dismiss();
   };
 
   return (
@@ -157,17 +191,15 @@ const GoogleTextInput = ({
         placeholder="Search location"
         value={query}
         onChangeText={setQuery}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setTimeout(() => setIsFocused(false), 200)}
         style={[
           styles.textInput,
           {
             backgroundColor: textInputBackgroundColor,
-            paddingLeft: icon ? 30 : 10,
+            paddingLeft: icon ? 40 : 12,
           },
         ]}
       />
-      {isFocused && suggestions.length > 0 && (
+      {isKeyboardVisible && suggestions.length > 0 && (
         <FlatList
           data={suggestions}
           keyExtractor={(item) => item.placePrediction.placeId}
@@ -176,15 +208,28 @@ const GoogleTextInput = ({
               style={styles.suggestionItem}
               onPress={() => handleSelect(item)}
             >
-              <Text>
-                {item.placePrediction.text.text}{" "}
+              <Image
+                source={require("../assets/icons/pin.png")}
+                style={styles.suggestionIcon}
+                resizeMode="contain"
+              />
+              <Text
+                style={styles.suggestionText}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {item.placePrediction.text.text}
+                {item.details?.formattedAddress
+                  ? `, ${item.details.formattedAddress}`
+                  : ""}
                 {typeof item.distance === "number" && item.distance !== Infinity
-                  ? `(${item.distance.toFixed(2)} km)`
+                  ? ` • ${item.distance.toFixed(1)} km`
                   : ""}
               </Text>
             </TouchableOpacity>
           )}
           style={styles.suggestionList}
+          keyboardShouldPersistTaps="handled"
         />
       )}
     </View>
@@ -198,13 +243,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#F3F4F6",
     borderRadius: 8,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 8,
     marginVertical: 6,
+    position: "relative",
   },
   icon: {
     width: 20,
     height: 20,
-    marginRight: 8,
     opacity: 0.6,
     position: "absolute",
     left: 12,
@@ -215,22 +260,40 @@ const styles = StyleSheet.create({
     height: 40,
     fontSize: 16,
     fontFamily: "Jakarta-Regular",
+    color: "#202124",
   },
   suggestionList: {
     position: "absolute",
-    top: 45,
+    top: 50,
     left: 0,
     right: 0,
-    backgroundColor: "white",
+    backgroundColor: "#fff",
     borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
     zIndex: 9999,
-    elevation: 3,
-    maxHeight: 200,
+    maxHeight: 300,
   },
   suggestionItem: {
-    padding: 13,
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#c8c7cc",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+  },
+  suggestionIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 12,
+    tintColor: "#5f6368",
+  },
+  suggestionText: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: "Jakarta-Regular",
+    color: "#202124",
   },
 });
 

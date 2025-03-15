@@ -2,6 +2,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@clerk/clerk-expo";
 import { router } from "expo-router";
+import React from "react";
 
 const Profile = () => {
   const { signOut } = useAuth();

@@ -4,6 +4,7 @@ import { icons } from "@/constants";
 import { formatDate, formatTime } from "@/lib/utils";
 import { Ride } from "@/types/type";
 import { useState } from "react";
+import React from "react";
 
 const RideCard = ({ ride }: { ride: Ride }) => {
   const [isMapModalVisible, setMapModalVisible] = useState(false);
