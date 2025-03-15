@@ -1,6 +1,7 @@
 import MapView, { Marker } from "react-native-maps";
 import { View } from "react-native";
 import { useEffect, useState } from "react";
+import React from "react";
 
 interface MapProps {
   latitude: number;

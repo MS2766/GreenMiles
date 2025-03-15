@@ -15,6 +15,7 @@ import { useState, useEffect } from "react";
 import { icons } from "@/constants";
 import * as Location from "expo-location";
 import GoogleTextInput from "@/components/GoogleTextInput";
+import React from "react";
 
 const recentRides = [
   {
@@ -224,7 +225,10 @@ export default function Page() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: "#F3F4F6", overflow: "visible" }}
+      className="flex-1 bg-gray-100"
+    >
       <FlatList
         data={recentRides?.slice(0, 5)}
         renderItem={({ item }) => (
@@ -243,7 +247,7 @@ export default function Page() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="always"
       />
     </SafeAreaView>
   );
