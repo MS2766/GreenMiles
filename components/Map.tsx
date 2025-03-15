@@ -1,13 +1,9 @@
 import MapView, { Marker, Region, Polyline } from "react-native-maps";
 import { View } from "react-native";
-<<<<<<< HEAD
 import { useEffect, useState, useCallback } from "react";
 import { SharedValue } from "react-native-reanimated";
 import { Dimensions } from "react-native";
 import { useAnimatedReaction, runOnJS } from "react-native-reanimated";
-=======
-import { useEffect, useState } from "react";
->>>>>>> 1cbad91f9a549c933c136930dc9d6da7243099b7
 import React from "react";
 
 export interface MarkerData {

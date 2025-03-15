@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
 import {
@@ -28,11 +27,6 @@ import { Image } from "react-native";
 import axios from "axios";
 import * as Location from "expo-location";
 import React from "react";
-=======
-import React from "react";
-import { Text } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
->>>>>>> 1cbad91f9a549c933c136930dc9d6da7243099b7
 
 const { height } = Dimensions.get("window");
 const MIN_HEIGHT = 100;

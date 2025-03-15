@@ -57,7 +57,6 @@ const GoogleTextInput = ({
   const [query, setQuery] = useState(initialLocation);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
-<<<<<<< HEAD
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -77,8 +76,6 @@ const GoogleTextInput = ({
       keyboardDidHideListener.remove();
     };
   }, []);
-=======
->>>>>>> 1cbad91f9a549c933c136930dc9d6da7243099b7
 
   // Listen to keyboard events
   useEffect(() => {
@@ -182,23 +179,12 @@ const GoogleTextInput = ({
         );
         setSuggestions(sortedSuggestions);
       } catch (error) {
-<<<<<<< HEAD
         console.log(
           "Autocomplete Error:",
           axios.isAxiosError(error)
             ? error.response?.data || error.message
             : error,
         );
-=======
-        if (axios.isAxiosError(error)) {
-          console.log(
-            "Autocomplete Error:",
-            error.response?.data || error.message,
-          );
-        } else {
-          console.log("Autocomplete Error:", error);
-        }
->>>>>>> 1cbad91f9a549c933c136930dc9d6da7243099b7
         setSuggestions([]);
       }
     };
@@ -218,11 +204,7 @@ const GoogleTextInput = ({
 
     setQuery(suggestion.placePrediction.text.text);
     setSuggestions([]);
-<<<<<<< HEAD
     Keyboard.dismiss();
-=======
-    Keyboard.dismiss(); // Dismiss keyboard after selection
->>>>>>> 1cbad91f9a549c933c136930dc9d6da7243099b7
   };
 
   return (
@@ -250,11 +232,7 @@ const GoogleTextInput = ({
               onPress={() => handleSelect(item)}
             >
               <Image
-<<<<<<< HEAD
                 source={require("../assets/icons/pin.png")}
-=======
-                source={require("../assets/icons/pin.png")} // Replace with icons.pin if available
->>>>>>> 1cbad91f9a549c933c136930dc9d6da7243099b7
                 style={styles.suggestionIcon}
                 resizeMode="contain"
               />
