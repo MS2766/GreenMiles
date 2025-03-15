@@ -15,7 +15,10 @@ import { useState, useEffect } from "react";
 import { icons } from "@/constants";
 import * as Location from "expo-location";
 import GoogleTextInput from "@/components/GoogleTextInput";
+<<<<<<< HEAD
 import { router } from "expo-router";
+=======
+>>>>>>> 1cbad91f9a549c933c136930dc9d6da7243099b7
 import React from "react";
 
 const recentRides = [
@@ -246,8 +249,13 @@ export default function Page() {
 
   return (
     <SafeAreaView
+<<<<<<< HEAD
       style={{ flex: 1, backgroundColor: "white" }}
       className="flex-1 bg-grey-100"
+=======
+      style={{ flex: 1, backgroundColor: "#F3F4F6", overflow: "visible" }}
+      className="flex-1 bg-gray-100"
+>>>>>>> 1cbad91f9a549c933c136930dc9d6da7243099b7
     >
       <FlatList
         data={recentRides?.slice(0, 5)}

@@ -68,6 +68,7 @@ const Layout = () => {
         }}
       />
       <Tabs.Screen
+<<<<<<< HEAD
         name="rides"
         options={{
           title: "Rides",
@@ -78,6 +79,8 @@ const Layout = () => {
         }}
       />
       <Tabs.Screen
+=======
+>>>>>>> 1cbad91f9a549c933c136930dc9d6da7243099b7
         name="chat"
         options={{
           title: "Chat",
@@ -88,6 +91,19 @@ const Layout = () => {
         }}
       />
       <Tabs.Screen
+<<<<<<< HEAD
+=======
+        name="rides"
+        options={{
+          title: "Rides",
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon focused={focused} icon={icons.map} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+>>>>>>> 1cbad91f9a549c933c136930dc9d6da7243099b7
         name="profile"
         options={{
           title: "Profile",
