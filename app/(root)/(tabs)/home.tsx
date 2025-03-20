@@ -171,7 +171,7 @@ export default function Page() {
 
   const handleRideAgain = (ride: (typeof recentRides)[0]) => {
     router.push({
-      pathname: "/rides",
+      pathname: "/(root)/find_or_host",
       params: {
         fromAddress: ride.origin_address,
         fromLatitude: ride.origin_latitude,
@@ -199,7 +199,7 @@ export default function Page() {
         onPlaceSelected={(placeData) => {
           if (location && placeData.latitude && placeData.longitude) {
             router.push({
-              pathname: "/rides",
+              pathname: "/(root)/find_or_host",
               params: {
                 fromAddress: locationAddress,
                 fromLatitude: location.latitude.toString(),

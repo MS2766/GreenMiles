@@ -50,7 +50,7 @@ const GoogleTextInput = ({
   icon,
   initialLocation = "",
   containerStyle,
-  textInputBackgroundColor = "#F3F4F6",
+  textInputBackgroundColor = "#F5F5F5",
   onPlaceSelected,
   userLocation,
 }: GoogleTextInputProps) => {
@@ -269,6 +269,15 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginVertical: 6,
     position: "relative",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+    zIndex: 1,
   },
   icon: {
     width: 20,
