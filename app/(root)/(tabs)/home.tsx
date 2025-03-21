@@ -261,7 +261,7 @@ export default function Page() {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => handleRideAgain(item)}
-              className="bg-black py-2 px-4 rounded-lg mt-2 self-center"
+              className="bg-gray-800 py-2 px-4 rounded-lg mt-2 self-center"
             >
               <Text className="text-white font-JakartaMedium">Ride Again?</Text>
             </TouchableOpacity>

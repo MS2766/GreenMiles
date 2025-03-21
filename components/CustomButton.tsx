@@ -13,7 +13,7 @@ const getBgVariantStyle = (variant: ButtonProps["bgVariant"]) => {
     case "success":
       return "bg-green-500";
     default:
-      return "bg-[#0286FF]";
+      return "bg-gray-800";
   }
 };
 
@@ -51,7 +51,7 @@ const CustomButton = ({
         borderColor: "#D1D5DB",
       }),
     }}
-    className={`w-full rounded-full flex flex-row items-center justify-center ${getBgVariantStyle(bgVariant)} ${className}`}
+    className={`w-full rounded-[6] flex flex-row items-center justify-center ${getBgVariantStyle(bgVariant)} ${className}`}
     {...props}
   >
     {IconLeft && <IconLeft />}

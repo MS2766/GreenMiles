@@ -30,8 +30,8 @@ const SignIn = () => {
       } else {
         console.error(JSON.stringify(signInAttempt, null, 2));
       }
-    } catch (err) {
-      console.error(JSON.stringify(err, null, 2));
+    } catch {
+      alert("Wrong email or password");
     }
   }, [isLoaded, signIn, form.email, form.password, setActive, router]);
 

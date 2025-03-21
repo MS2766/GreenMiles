@@ -1,4 +1,3 @@
-import { router } from "expo-router";
 import React, { useRef } from "react";
 import {
   TextInput,
@@ -8,15 +7,15 @@ import {
   TouchableOpacity,
 } from "react-native";
 
-interface VerificationState {
-  state: "pending" | "failed" | "success";
+type VerificationState = {
+  state: "default" | "pending" | "failed" | "success";
   error: string;
   code: string;
-}
+};
 
 interface VerificationModalProps {
   verification: VerificationState;
-  setVerification: (verification: VerificationState) => void;
+  setVerification: React.Dispatch<React.SetStateAction<VerificationState>>;
   onVerifyPress: () => void;
   onResendCode: () => void;
 }

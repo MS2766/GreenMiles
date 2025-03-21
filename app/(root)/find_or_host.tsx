@@ -443,13 +443,13 @@ export default function FindOrHost() {
                     style={styles.button}
                     onPress={handleHostRide}
                   >
-                    <Text style={styles.buttonText}>Host</Text>
+                    <Text style={styles.buttonText}>Host Ride</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.button}
                     onPress={handleFindRide}
                   >
-                    <Text style={styles.buttonText}>Find</Text>
+                    <Text style={styles.buttonText}>Find Ride</Text>
                   </TouchableOpacity>
                 </View>
               </Animated.View>
@@ -522,7 +522,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   button: {
-    backgroundColor: "#292929",
+    backgroundColor: "#263238",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
@@ -554,6 +554,6 @@ const styles = StyleSheet.create({
   backIcon: {
     width: 20,
     height: 20,
-    tintColor: "#202124",
+    tintColor: "#263238", // Changed to gray-800
   },
 });

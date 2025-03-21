@@ -47,7 +47,7 @@ const InputField = ({
               backgroundColor: "#F9FAFB",
               borderWidth: 1,
               borderColor: "#D1D5DB",
-              borderRadius: 25,
+              borderRadius: 6,
               height: 45,
             }}
           >

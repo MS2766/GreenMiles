@@ -39,14 +39,25 @@ const SignUp = () => {
     code: "",
   });
 
+  // Function to split name into firstName and lastName
+  const splitName = (fullName: string) => {
+    const nameParts = fullName.trim().split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
+    return { firstName, lastName };
+  };
+
   const onSignUpPress = async () => {
     if (!isLoaded) return;
 
     try {
+      const { firstName, lastName } = splitName(form.name);
+
       await signUp.create({
         emailAddress: form.email,
         password: form.password,
-        firstName: form.name,
+        firstName: firstName,
+        lastName: lastName, // Add lastName to satisfy Clerk's requirements
       });
 
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
@@ -87,7 +98,7 @@ const SignUp = () => {
           await fetchAPI("/(api)/user", {
             method: "POST",
             body: JSON.stringify({
-              name: form.name,
+              name: form.name, // Keep full name for Neon database
               email: form.email,
               clerkID: signUpAttempt.createdUserId,
             }),
@@ -98,6 +109,7 @@ const SignUp = () => {
 
         await setActive({ session: signUpAttempt.createdSessionId });
         setVerification({ ...verification, state: "success", error: "" });
+        router.replace("/"); // Redirect to home after successful signup
       } else {
         setVerification({
           ...verification,
@@ -149,9 +161,13 @@ const SignUp = () => {
   const onResendCode = async () => {
     if (!isLoaded) return;
     try {
+      const { firstName, lastName } = splitName(form.name);
+
       await signUp.create({
         emailAddress: form.email,
         password: form.password,
+        firstName: firstName,
+        lastName: lastName,
       });
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setVerification({
@@ -187,7 +203,7 @@ const SignUp = () => {
         <View style={{ marginTop: -30 }} className="p-5">
           <InputField
             label="Name"
-            placeholder="Enter your name"
+            placeholder="Enter your full name"
             icon={icons.person}
             value={form.name}
             onChangeText={(value) => setForm({ ...form, name: value })}

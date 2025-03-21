@@ -115,7 +115,7 @@ export default function Map({
           {routeCoords.length > 0 && (
             <Polyline
               coordinates={routeCoords}
-              strokeColor="#000000"
+              strokeColor="#263238"
               strokeWidth={3}
             />
           )}
