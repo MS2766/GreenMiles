@@ -134,11 +134,20 @@ export default function Page() {
     "Fetching location...",
   );
 
+  const colors = {
+    primary: "#1E88E5",
+    secondary: "#FFFFFF",
+    accent: "#43A047",
+    textPrimary: "#212121",
+    textSecondary: "#757575",
+    background: "#F5F5F5",
+  };
+
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        setLocationAddress("Permission to access location was denied");
+        setLocationAddress("Enable location to find rides");
         return;
       }
 
@@ -150,7 +159,7 @@ export default function Page() {
   useEffect(() => {
     if (location) {
       (async () => {
-        let address = await Location.reverseGeocodeAsync({
+        const address = await Location.reverseGeocodeAsync({
           latitude: location.latitude,
           longitude: location.longitude,
         });
@@ -158,15 +167,16 @@ export default function Page() {
           const { city, region, country } = address[0];
           setLocationAddress(`${city}, ${region}, ${country}`);
         } else {
-          setLocationAddress("Unable to determine location");
+          setLocationAddress("Location unavailable");
         }
       })();
     }
   }, [location]);
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1000);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setRefreshing(false);
   };
 
   const handleRideAgain = (ride: (typeof recentRides)[0]) => {
@@ -184,13 +194,27 @@ export default function Page() {
   };
 
   const renderHeader = () => (
-    <View className="p-5 bg-white shadow-sm shadow-neutral-200">
-      <Text className="text-2xl text-center font-JakartaBold text-gray-800">
-        Welcome, {isLoaded ? user?.firstName || "Rider" : "Loading..."}!
-      </Text>
+    <View className="p-5 bg-white rounded-b-3xl">
+      {/* Gradient Header */}
+      <View className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 rounded-t-2xl -mx-5 -mt-5">
+        <Text className="text-2xl text-center font-JakartaBold text-grey-800">
+          Hello, {isLoaded ? user?.firstName || "Rider" : "Loading..."}
+        </Text>
+        <Text className="text-sm text-center text-gray-800 mt-1">
+          Where are you going today?
+        </Text>
+      </View>
+
+      {/* Search Input */}
       <GoogleTextInput
         icon={icons.search}
-        containerStyle={{ marginBottom: 16 }}
+        containerStyle={{
+          marginTop: 16,
+          backgroundColor: "#F3F4F6",
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: "#E5E7EB",
+        }}
         userLocation={
           location
             ? { latitude: location.latitude, longitude: location.longitude }
@@ -212,68 +236,84 @@ export default function Page() {
           }
         }}
       />
-      <View className="mb-4">
-        <View className="flex-row items-center mb-2">
-          <Image source={icons.point} className="w-4 h-4 mr-2" />
-          <Text className="text-md font-JakartaMedium text-gray-600">
+
+      {/* Location Card */}
+      <View className="absolute top-40 mt-5 left-3 right-2 bg-transparent rounded-lg p-2">
+        <View className="flex-row">
+          <Image source={icons.point} className="w-5 h-5 mr-2 tint-white" />
+          <Text
+            className="text-sm font-JakartaSemiBold text-black flex-1"
+            numberOfLines={1}
+          >
             {locationAddress}
           </Text>
         </View>
-        <View style={{ height: 200, width: "100%" }}>
+      </View>
+      <View className="mt-8 bg-gray-50 rounded-xl">
+        <View className="h-48 rounded-lg overflow-hidden">
           {location ? (
-            <Map
-              markers={[
-                { latitude: location.latitude, longitude: location.longitude },
-              ]}
-            />
+            <View className="flex-1 h-48 rounded-xl">
+              <Map
+                markers={[
+                  {
+                    latitude: parseFloat(location.latitude.toString()),
+                    longitude: parseFloat(location.longitude.toString()),
+                  },
+                ]}
+              />
+            </View>
           ) : (
-            <View className="flex-1 items-center justify-center">
-              <ActivityIndicator size="large" color="#0000ff" />
-              <Text className="text-center mt-4 text-gray-500">
-                {locationAddress === "Fetching location..."
-                  ? "Loading map..."
-                  : locationAddress}
+            <View className="flex-1 items-center justify-center bg-gray-100 rounded-lg">
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text className="text-sm text-gray-500 mt-2">
+                {locationAddress}
               </Text>
             </View>
           )}
         </View>
       </View>
-      <Text className="text-xl text-center font-JakartaMedium text-black-500 mt-1">
-        Your Recent Rides
+
+      {/* Recent Rides Header */}
+      <Text className="text-lg text-center font-JakartaSemiBold text-gray-800 mt-6 mb-2">
+        Recent Rides
       </Text>
     </View>
   );
 
+  const renderRideItem = ({ item }: { item: (typeof recentRides)[0] }) => (
+    <View className="mx-5 mb-4 bg-gray-800 rounded-xl shadow-md overflow-hidden">
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => console.log(`Navigate to ride ${item.ride_id}`)}
+      >
+        <RideCard ride={item} />
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => handleRideAgain(item)}
+        className="bg-gray-800 py-3 rounded-lg w-full"
+      >
+        <Text className="text-white font-JakartaSemiBold text-center">
+          Ride Again
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: "white" }}
-      className="flex-1 bg-grey-100"
-    >
+    <SafeAreaView className="flex-1 bg-white">
       <FlatList
         data={recentRides?.slice(0, 5)}
-        renderItem={({ item }) => (
-          <View>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => console.log(`Navigate to ride ${item.ride_id}`)}
-            >
-              <RideCard ride={item} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => handleRideAgain(item)}
-              className="bg-gray-800 py-2 px-4 rounded-lg mt-2 self-center"
-            >
-              <Text className="text-white font-JakartaMedium">Ride Again?</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        renderItem={renderRideItem}
         keyExtractor={(item) => item.ride_id}
         ListHeaderComponent={renderHeader}
-        ItemSeparatorComponent={() => <View className="h-2" />}
         contentContainerStyle={{ paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
         }
         keyboardShouldPersistTaps="always"
       />

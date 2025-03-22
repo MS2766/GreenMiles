@@ -11,6 +11,9 @@ import google from "@/assets/icons/google.png";
 import home from "@/assets/icons/home.png";
 import list from "@/assets/icons/list.png";
 import lock from "@/assets/icons/lock.png";
+import clock from "@/assets/icons/clock.png";
+import calendar from "@/assets/icons/calendar.png";
+import seat from "@/assets/icons/seat.png";
 import map from "@/assets/icons/map.png";
 import marker from "@/assets/icons/marker.png";
 import out from "@/assets/icons/out.png";
@@ -57,6 +60,9 @@ export const icons = {
   home,
   list,
   lock,
+  calendar,
+  seat,
+  clock,
   map,
   marker,
   out,
