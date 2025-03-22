@@ -21,48 +21,48 @@ import React from "react";
 const recentRides = [
   {
     ride_id: "1",
-    origin_address: "Kathmandu, Nepal",
-    destination_address: "Pokhara, Nepal",
+    origin_address: "Bangalore, Karnataka",
+    destination_address: "Chennai, Tamil Nadu",
     origin_latitude: "27.717245",
     origin_longitude: "85.323961",
     destination_latitude: "28.209583",
     destination_longitude: "83.985567",
     ride_time: 391,
-    fare_price: "19500.00",
+    fare_price: "500.00",
     payment_status: "Paid",
     driver_id: 2,
     user_id: "1",
     created_at: "2024-08-12 05:19:20.620007",
     driver: {
       driver_id: "2",
-      first_name: "David",
-      last_name: "Brown",
+      first_name: "Abel",
+      last_name: "George Wilson",
       profile_image_url:
         "https://ucarecdn.com/6ea6d83d-ef1a-483f-9106-837a3a5b3f67/-/preview/1000x666/",
       car_image_url:
         "https://ucarecdn.com/a3872f80-c094-409c-82f8-c9ff38429327/-/preview/930x932/",
       car_seats: 5,
-      rating: "4.60",
+      rating: "3.50",
     },
   },
   {
     ride_id: "2",
-    origin_address: "Jalkot, MH",
-    destination_address: "Pune, Maharashtra, India",
+    origin_address: "Jalkot, Maharashtra",
+    destination_address: "Pune, Maharashtra",
     origin_latitude: "18.609116",
     origin_longitude: "77.165873",
     destination_latitude: "18.520430",
     destination_longitude: "73.856744",
     ride_time: 491,
-    fare_price: "24500.00",
+    fare_price: "245.00",
     payment_status: "Paid",
     driver_id: 1,
     user_id: "1",
     created_at: "2024-08-12 06:12:17.683046",
     driver: {
       driver_id: "1",
-      first_name: "James",
-      last_name: "Wilson",
+      first_name: "Suyash",
+      last_name: "Gupta",
       profile_image_url:
         "https://ucarecdn.com/dae59f69-2c1f-48c3-a883-017bcf0f9950/-/preview/1000x666/",
       car_image_url:
@@ -80,7 +80,7 @@ const recentRides = [
     destination_latitude: "45.327063",
     destination_longitude: "14.442176",
     ride_time: 124,
-    fare_price: "6200.00",
+    fare_price: "1450.00",
     payment_status: "Paid",
     driver_id: 1,
     user_id: "1",
@@ -99,14 +99,14 @@ const recentRides = [
   },
   {
     ride_id: "4",
-    origin_address: "Okayama, Japan",
-    destination_address: "Osaka, Japan",
+    origin_address: "Kochi, Kerala",
+    destination_address: "Trivandrum, Kerala",
     origin_latitude: "34.655531",
     origin_longitude: "133.919795",
     destination_latitude: "34.693725",
     destination_longitude: "135.502254",
-    ride_time: 159,
-    fare_price: "7900.00",
+    ride_time: 359,
+    fare_price: "90.00",
     payment_status: "Paid",
     driver_id: 3,
     user_id: "1",
@@ -282,12 +282,9 @@ export default function Page() {
 
   const renderRideItem = ({ item }: { item: (typeof recentRides)[0] }) => (
     <View className="mx-5 mb-4 bg-gray-800 rounded-xl shadow-md overflow-hidden">
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() => console.log(`Navigate to ride ${item.ride_id}`)}
-      >
+      <View>
         <RideCard ride={item} />
-      </TouchableOpacity>
+      </View>
       <TouchableOpacity
         onPress={() => handleRideAgain(item)}
         className="bg-gray-800 py-3 rounded-lg w-full"

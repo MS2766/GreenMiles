@@ -86,7 +86,7 @@ const RideCard = ({ ride }: { ride: Ride }) => {
             </Text>
           </View>
           <Text className="text-sm font-JakartaBold text-gray-800">
-            ${(parseFloat(ride.fare_price) / 100).toFixed(2)}
+            ₹{parseFloat(ride.fare_price).toFixed(2)}
           </Text>
         </View>
 
