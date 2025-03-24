@@ -8,6 +8,7 @@ declare interface Driver {
   car_image_url: string;
   car_seats: number;
   rating: number;
+  price?: number;
 }
 
 declare interface MarkerData {
@@ -131,12 +132,10 @@ declare interface LocationStore {
   }) => void;
 }
 
-declare interface DriverStore {
-  drivers: MarkerData[];
-  selectedDriver: number | null;
-  setSelectedDriver: (driverId: number) => void;
-  setDrivers: (drivers: MarkerData[]) => void;
-  clearSelectedDriver: () => void;
+interface DriverCardProps {
+  item: Driver;
+  selected: number;
+  setSelected: () => void;
 }
 
 declare interface DriverCardProps {

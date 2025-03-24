@@ -208,9 +208,10 @@ const GoogleTextInput = ({
   };
 
   return (
-    <View style={[styles.container, containerStyle]}>
+    <View style={[styles.container, containerStyle, { height: 55 }]}>
       {icon && <Image source={icon} style={styles.icon} resizeMode="contain" />}
       <TextInput
+        className="mt-1"
         placeholder="Search location"
         value={query}
         onChangeText={setQuery}

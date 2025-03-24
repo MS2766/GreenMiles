@@ -38,13 +38,19 @@ const RideCard = ({ ride }: { ride: Ride }) => {
         >
           <Image
             source={{ uri: mapUrl, cache: "force-cache" }}
-            style={{ width: 100, height: 100 }}
+            className="w-24 h-24" // Tailwind size (6rem = 96px)
+            style={{ width: 96, height: 96 }} // Explicit size in pixels
             resizeMode="cover"
           />
         </TouchableOpacity>
         <View className="flex-1 ml-3">
           <View className="flex-row items-center mb-2">
-            <Image source={icons.to} className="w-4 h-4 mr-2 tint-blue-500" />
+            <Image
+              source={icons.to}
+              className="w-4 h-4 mr-2 tint-blue-500"
+              style={{ width: 16, height: 16 }} // Matches w-4 h-4
+              resizeMode="contain"
+            />
             <Text
               className="text-sm font-JakartaSemiBold text-gray-800 flex-1"
               numberOfLines={1}
@@ -53,7 +59,12 @@ const RideCard = ({ ride }: { ride: Ride }) => {
             </Text>
           </View>
           <View className="flex-row items-center">
-            <Image source={icons.point} className="w-4 h-4 mr-2 tint-red-500" />
+            <Image
+              source={icons.point}
+              className="w-4 h-4 mr-2 tint-red-500"
+              style={{ width: 16, height: 16 }}
+              resizeMode="contain"
+            />
             <Text
               className="text-sm font-JakartaSemiBold text-gray-800 flex-1"
               numberOfLines={1}
@@ -65,6 +76,8 @@ const RideCard = ({ ride }: { ride: Ride }) => {
             <Image
               source={icons.clock}
               className="w-4 h-4 mr-2 tint-gray-500"
+              style={{ width: 16, height: 16 }}
+              resizeMode="contain"
             />
             <Text className="text-xs text-gray-600">
               {formatTime(ride.ride_time) || "N/A"}
@@ -80,6 +93,8 @@ const RideCard = ({ ride }: { ride: Ride }) => {
             <Image
               source={icons.calendar}
               className="w-4 h-4 mr-2 tint-gray-500"
+              style={{ width: 16, height: 16 }}
+              resizeMode="contain"
             />
             <Text className="text-xs text-gray-600">
               {formatDate(ride.created_at) || "N/A"}
@@ -95,6 +110,8 @@ const RideCard = ({ ride }: { ride: Ride }) => {
             <Image
               source={icons.person}
               className="w-4 h-4 mr-2 tint-gray-500"
+              style={{ width: 16, height: 16 }}
+              resizeMode="contain"
             />
             <Text className="text-xs text-gray-600">
               {ride.driver.first_name} {ride.driver.last_name}
@@ -104,6 +121,8 @@ const RideCard = ({ ride }: { ride: Ride }) => {
             <Image
               source={icons.star}
               className="w-4 h-4 mr-1 tint-yellow-400"
+              style={{ width: 16, height: 16 }}
+              resizeMode="contain"
             />
             <Text className="text-xs text-gray-600">
               {ride.driver.rating || "N/A"}
@@ -113,7 +132,12 @@ const RideCard = ({ ride }: { ride: Ride }) => {
 
         <View className="flex-row justify-between items-center">
           <View className="flex-row items-center">
-            <Image source={icons.seat} className="w-4 h-4 mr-2 tint-gray-500" />
+            <Image
+              source={icons.seat}
+              className="w-4 h-4 mr-2 tint-gray-500"
+              style={{ width: 16, height: 16 }}
+              resizeMode="contain"
+            />
             <Text className="text-xs text-gray-600">
               {ride.driver.car_seats} seats
             </Text>
@@ -142,7 +166,8 @@ const RideCard = ({ ride }: { ride: Ride }) => {
           <View className="relative rounded-lg overflow-hidden">
             <Image
               source={{ uri: zoomedMapUrl }}
-              style={{ width: "100%", height: 350, borderRadius: 8 }}
+              className="w-full h-80" // Tailwind: w-full = 100%, h-80 = 20rem = 320px
+              style={{ width: "100%", height: 320, borderRadius: 8 }}
               resizeMode="cover"
               onLoad={() => setMapLoaded(true)}
             />
