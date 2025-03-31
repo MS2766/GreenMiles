@@ -5,20 +5,64 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  Alert,
 } from "react-native";
 import { useState } from "react";
 import React from "react";
+import { useUser } from "@clerk/clerk-expo";
 
 export default function HostRide() {
   const params = useLocalSearchParams();
   const { fromAddress, toAddress } = params;
+  const { user } = useUser(); // Get authenticated user from Clerk
   const [time, setTime] = useState("");
   const [price, setPrice] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = () => {
-    // TODO: API call to host the ride with fromAddress, toAddress, time, price
-    console.log("Hosting ride:", { fromAddress, toAddress, time, price });
-    router.back(); // Or navigate to a confirmation screen
+  const handleSubmit = async () => {
+    if (!fromAddress || !toAddress || !time || !price) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
+
+    if (!user) {
+      Alert.alert("Error", "You must be logged in to host a ride");
+      return;
+    }
+
+    const clerkID = user.id; // Clerk user ID
+
+    setIsLoading(true);
+    try {
+      // API call to host the ride
+      const response = await fetch("/api/rides", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          originAddress: fromAddress,
+          destinationAddress: toAddress,
+          departureTime: time,
+          price,
+          clerkID,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to host ride");
+      }
+
+      Alert.alert("Success", "Ride hosted successfully!");
+      router.back(); // Or navigate to a confirmation screen
+    } catch (error) {
+      console.error("Error hosting ride:", error);
+      Alert.alert("Error", error.message || "Failed to host ride");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -31,6 +75,7 @@ export default function HostRide() {
         placeholder="Departure Time (e.g., 10:00 AM)"
         value={time}
         onChangeText={setTime}
+        editable={!isLoading}
       />
       <TextInput
         style={styles.input}
@@ -38,9 +83,16 @@ export default function HostRide() {
         value={price}
         onChangeText={setPrice}
         keyboardType="numeric"
+        editable={!isLoading}
       />
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Host Ride</Text>
+      <TouchableOpacity
+        style={[styles.button, isLoading && styles.buttonDisabled]}
+        onPress={handleSubmit}
+        disabled={isLoading}
+      >
+        <Text style={styles.buttonText}>
+          {isLoading ? "Hosting..." : "Host Ride"}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -76,6 +128,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
+  },
+  buttonDisabled: {
+    backgroundColor: "#888",
   },
   buttonText: {
     color: "#fff",

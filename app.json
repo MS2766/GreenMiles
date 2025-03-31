@@ -25,7 +25,8 @@
         "image": "./assets/images/splash.png",
         "resizeMode": "cover",
         "backgroundColor": "#1A1A1A"
-      }
+      },
+      "package": "com.anonymous.RideShare"
     },
     "web": {
       "bundler": "metro",
@@ -33,19 +34,22 @@
       "favicon": "./assets/images/splash.png"
     },
     "plugins": [
-  [
-    "expo-router", {"origin": "https://RideShare.com/"}
-  ],
-  [
-    "expo-splash-screen",
-    {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "cover",
-      "backgroundColor": "#1A1A1A"
-    }
-  ],
-  "expo-font"
-  ],
+      [
+        "expo-router",
+        {
+          "origin": "https://RideShare.com/"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash.png",
+          "resizeMode": "cover",
+          "backgroundColor": "#1A1A1A"
+        }
+      ],
+      "expo-font"
+    ],
     "experiments": {
       "typedRoutes": true
     }
