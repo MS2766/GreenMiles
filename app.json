@@ -4,7 +4,7 @@
     "slug": "RideShare",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/splash.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "rideshare",
     "userInterfaceStyle": "automatic",
     "splash": {
@@ -13,12 +13,13 @@
       "backgroundColor": "#1A1A1A"
     },
     "newArchEnabled": true,
+    "platforms": ["android"],
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/splash.png",
+        "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "splash": {
@@ -27,11 +28,6 @@
         "backgroundColor": "#1A1A1A"
       },
       "package": "com.anonymous.RideShare"
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "server",
-      "favicon": "./assets/images/splash.png"
     },
     "plugins": [
       [

@@ -1,35 +1,40 @@
+import { useState, useEffect, useCallback } from "react";
+
 export const fetchAPI = async (url: string, options?: RequestInit) => {
   try {
-    console.log("fetchAPI: Fetching URL:", url, "with options:", options);
     const response = await fetch(url, options);
-    console.log("fetchAPI: Response status:", response.status);
-
     if (!response.ok) {
-      const errorText = await response.text();
-      console.log("fetchAPI: Error response body:", errorText);
-      throw new Error(
-        `HTTP error! status: ${response.status}, body: ${errorText}`,
-      );
+      new Error(`HTTP error! status: ${response.status}`);
     }
-
-    const text = await response.text();
-    console.log("fetchAPI: Raw response:", text);
-
-    if (!text) {
-      console.log("fetchAPI: Empty response body");
-      return null; // Handle empty response
-    }
-
-    try {
-      const json = JSON.parse(text);
-      console.log("fetchAPI: Parsed JSON:", json);
-      return json;
-    } catch (jsonError) {
-      console.log("fetchAPI: Not JSON, returning raw text:", text);
-      return text; // Return plain text instead of throwing
-    }
+    return await response.json();
   } catch (error) {
-    console.error("fetchAPI: Fetch error:", error);
+    console.error("Fetch error:", error);
     throw error;
   }
+};
+
+export const useFetch = <T>(url: string, options?: RequestInit) => {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await fetchAPI(url, options);
+      setData(result.data);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }, [url, options]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { data, loading, error, refetch: fetchData };
 };
