@@ -37,7 +37,8 @@ interface RideData {
 }
 
 // API URL with fallback
-const BASE_API_URL = "http://10.9.156.184:3000"; // Replace with your IP
+const BASE_API_URL =
+  Platform.OS === "android" ? "http://10.0.2.2:3000" : "http://localhost:3000";
 const API_URL = `${process.env.EXPO_PUBLIC_SERVER_URL || BASE_API_URL}/api/ride`;
 
 export default function HostRide() {
