@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 // app/(root)/host_ride.tsx
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
@@ -37,8 +38,9 @@ interface RideData {
 }
 
 // API URL with fallback
-const BASE_API_URL = "http://10.9.156.184:3000"; // Replace with your IP
-const API_URL = `${process.env.EXPO_PUBLIC_SERVER_URL || BASE_API_URL}/api/ride`;
+const BASE_API_URL = 
+  process.env.EXPO_PUBLIC_SERVER_URL || "http://localhost:3000";
+const API_URL = `${BASE_API_URL}/api/ride`;
 
 export default function HostRide() {
   const params = useLocalSearchParams();
