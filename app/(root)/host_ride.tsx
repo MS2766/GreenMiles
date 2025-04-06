@@ -38,8 +38,7 @@ interface RideData {
 }
 
 // API URL with fallback
-const BASE_API_URL = 
-  process.env.EXPO_PUBLIC_SERVER_URL || "http://localhost:3000";
+const BASE_API_URL = "https://a23b-120-138-12-230.ngrok-free.app"; // Update this
 const API_URL = `${BASE_API_URL}/api/ride`;
 
 export default function HostRide() {
@@ -274,14 +273,22 @@ export default function HostRide() {
       console.log("Submitting to:", API_URL);
       console.log("Request data:", rideData);
 
-      const result = await fetchAPI(API_URL, {
+      const response = await fetch(API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json"
         },
         body: JSON.stringify(rideData),
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server response:", errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
       console.log("Response:", result);
 
       Alert.alert("Success", "Ride hosted successfully!", [

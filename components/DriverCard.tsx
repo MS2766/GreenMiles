@@ -1,84 +1,98 @@
-import React from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
-import { icons } from "@/constants";
-import { formatTime } from "@/lib/utils";
+import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { MarkerData } from "@/types/type";
+import React from "react";
 
 interface DriverCardProps {
   item: MarkerData;
   selected: number;
-  setSelected: () => void;
+  setSelected: (id: number) => void;
 }
 
-const DriverCard = ({ item, selected, setSelected }: DriverCardProps) => {
+export default function DriverCard({
+  item,
+  selected,
+  setSelected,
+}: DriverCardProps) {
   return (
     <TouchableOpacity
-      onPress={setSelected}
-      className={`flex-row items-center justify-between py-4 px-3 rounded-xl mb-3 shadow-sm ${
-        selected === item.id ? "bg-blue-100 border border-blue-500" : "bg-white"
-      }`}
+      style={[
+        styles.container,
+        selected === item.id && styles.selectedContainer,
+      ]}
+      onPress={() => setSelected(item.id)}
     >
-      <Image
-        source={{ uri: item.profile_image_url }}
-        className="w-14 h-14 rounded-full"
-      />
-
-      <View className="flex-1 mx-3">
-        <View className="flex-row items-center justify-start mb-1">
-          <Text className="text-lg font-JakartaSemiBold text-gray-800">
-            {item.title}
+      <View style={styles.driverInfo}>
+        <Image
+          source={{ uri: item.profile_image_url }}
+          style={styles.profileImage}
+          resizeMode="cover"
+        />
+        <View style={styles.textContainer}>
+          <Text style={styles.name}>
+            {item.first_name} {item.last_name}
           </Text>
-          <View className="flex-row items-center space-x-1 ml-2">
-            <Image
-              source={icons.star}
-              className="w-3.5 h-3.5 tint-yellow-400"
-            />
-            <Text className="text-sm font-JakartaRegular text-gray-600">
-              {item.rating.toFixed(1)}
-            </Text>
-          </View>
+          <Text style={styles.details}>
+            {`${item.car_seats} seats • ${item.time} mins • $${item.price}`}
+          </Text>
         </View>
-
-        <View className="flex-row items-center justify-start">
-          {item.price && (
-            <>
-              <View className="flex-row items-center">
-                <Image
-                  source={icons.dollar}
-                  className="w-4 h-4 tint-green-600"
-                />
-                <Text className="text-sm font-JakartaMedium text-gray-700 ml-1">
-                  ${item.price}
-                </Text>
-              </View>
-              <Text className="text-sm font-JakartaRegular text-gray-500 mx-2">
-                |
-              </Text>
-            </>
-          )}
-          {item.time && (
-            <>
-              <Text className="text-sm font-JakartaMedium text-gray-700">
-                {formatTime(item.time)}
-              </Text>
-              <Text className="text-sm font-JakartaRegular text-gray-500 mx-2">
-                |
-              </Text>
-            </>
-          )}
-          <Text className="text-sm font-JakartaMedium text-gray-700">
-            {item.car_seats} seats
-          </Text>
+        <View style={styles.ratingContainer}>
+          <Text style={styles.rating}>{item.rating.toFixed(1)}</Text>
         </View>
       </View>
-
-      <Image
-        source={{ uri: item.car_image_url }}
-        className="h-14 w-14"
-        resizeMode="contain"
-      />
     </TouchableOpacity>
   );
-};
+}
 
-export default DriverCard;
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 8,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  selectedContainer: {
+    backgroundColor: "#F0F9FF",
+    borderColor: "#0EA5E9",
+    borderWidth: 1,
+  },
+  driverInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  profileImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  textContainer: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  name: {
+    fontSize: 16,
+    fontFamily: "PlusJakartaSans-Medium",
+    color: "#1F2937",
+  },
+  details: {
+    fontSize: 14,
+    fontFamily: "PlusJakartaSans-Regular",
+    color: "#6B7280",
+    marginTop: 4,
+  },
+  ratingContainer: {
+    backgroundColor: "#F3F4F6",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  rating: {
+    fontSize: 14,
+    fontFamily: "PlusJakartaSans-Medium",
+    color: "#1F2937",
+  },
+});
