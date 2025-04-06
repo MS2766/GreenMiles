@@ -1,97 +1,54 @@
 // app/(api)/ride+api.ts
 import { neon } from "@neondatabase/serverless";
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   try {
-    const databaseUrl = process.env.DATABASE_URL;
+    const url = new URL(request.url);
+    const origin = url.searchParams.get("origin");
+    const destination = url.searchParams.get("destination");
+    const fromLat = url.searchParams.get("fromLat");
+    const fromLng = url.searchParams.get("fromLng");
+    const toLat = url.searchParams.get("toLat");
+    const toLng = url.searchParams.get("toLng");
 
+    const databaseUrl = process.env.DATABASE_URL;
     if (!databaseUrl) {
       return new Response(
         JSON.stringify({ error: "Database connection URL is not defined" }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        },
+        { status: 500 }
       );
     }
 
     const sql = neon(databaseUrl);
-    const {
-      originAddress,
-      destinationAddress,
-      departureTime,
-      price,
-      car,
-      seats,
-      phone,
-      clerkID,
-    } = await request.json();
 
-    // Validate required fields
-    if (
-      !originAddress ||
-      !destinationAddress ||
-      !departureTime ||
-      !price ||
-      !car ||
-      !seats ||
-      !phone ||
-      !clerkID
-    ) {
-      return new Response(
-        JSON.stringify({ error: "Invalid request: Missing required fields" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        },
-      );
-    }
-
-    const result = await sql`
-      INSERT INTO rides (
-        clerk_id,
-        origin_address,
-        destination_address,
-        departure_time,
-        price,
-        car_model,
-        available_seats,
-        phone_number
-      )
-      VALUES (
-        ${clerkID},
-        ${originAddress},
-        ${destinationAddress},
-        ${new Date(departureTime)},
-        ${Number(price)},
-        ${car},
-        ${Number(seats)},
-        ${phone}
-      )
-      RETURNING id
+    const rides = await sql`
+      SELECT 
+        r.id,
+        r.origin_address,
+        r.destination_address,
+        r.departure_time,
+        r.price,
+        r.car_model,
+        r.available_seats,
+        r.phone_number,
+        u.name as driver_name
+      FROM rides r
+      JOIN users u ON r.clerk_id = u.clerk_id
+      WHERE 
+        r.origin_address ILIKE ${`%${origin}%`}
+        AND r.destination_address ILIKE ${`%${destination}%`}
+        AND r.departure_time > NOW()
+      ORDER BY r.departure_time ASC
     `;
 
-    return new Response(
-      JSON.stringify({
-        message: "Ride hosted successfully",
-        rideId: result[0].id,
-      }),
-      {
-        status: 201,
-        headers: { "Content-Type": "application/json" },
-      },
-    );
+    return new Response(JSON.stringify(rides), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
-    console.error("Error hosting ride:", error);
-    return new Response(
-      JSON.stringify({
-        error: "Internal Server Error",
-        details: error instanceof Error ? error.message : "Unknown error",
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      },
-    );
+    console.error("Error fetching rides:", error);
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+      status: 500,
+    });
   }
 }

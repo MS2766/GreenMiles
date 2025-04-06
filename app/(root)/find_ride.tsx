@@ -1,4 +1,6 @@
-import { useLocalSearchParams, router } from "expo-router";
+/* eslint-disable prettier/prettier */
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,12 +9,15 @@ import {
   FlatList,
   Image,
 } from "react-native";
-import { useState } from "react";
-import React from "react";
+import { useLocalSearchParams, router } from "expo-router";
 import RideLayout from "@/components/RideLayout";
 import DriverCard from "@/components/DriverCard";
 import { MarkerData } from "@/types/type";
 import { icons } from "@/constants";
+import axios from "axios";
+
+const BASE_API_URL = process.env.EXPO_PUBLIC_SERVER_URL || "http://localhost:3000";
+const API_URL = `${BASE_API_URL}/api/ride`;
 
 export default function FindRide() {
   const params = useLocalSearchParams();
@@ -25,43 +30,12 @@ export default function FindRide() {
     toLongitude,
   } = params;
 
-  // Sample ride data (replace with actual API call later)
-  const [rides, setRides] = useState<MarkerData[]>([
-    {
-      id: 1,
-      first_name: "David",
-      last_name: "Brown",
-      latitude: parseFloat(fromLatitude as string) || 37.7749, // Default fallback
-      longitude: parseFloat(fromLongitude as string) || -122.4194,
-      profile_image_url:
-        "https://ucarecdn.com/6ea6d83d-ef1a-483f-9106-837a3a5b3f67/-/preview/1000x666/",
-      car_image_url:
-        "https://ucarecdn.com/a3872f80-c094-409c-82f8-c9ff38429327/-/preview/930x932/",
-      car_seats: 5,
-      rating: 4.6,
-      title: "David Brown",
-      time: 391,
-      price: "19.50",
-    },
-    {
-      id: 2,
-      first_name: "John",
-      last_name: "Leason",
-      latitude: parseFloat(fromLatitude as string) || 37.7859, // Slightly different default
-      longitude: parseFloat(fromLongitude as string) || -122.4364,
-      profile_image_url:
-        "https://ucarecdn.com/dae59f69-2c1f-48c3-a883-017bcf0f9950/-/preview/1000x666/",
-      car_image_url:
-        "https://ucarecdn.com/a2dc52b2-8bf7-4e49-9a36-3ffb5229ed02/-/preview/465x466/",
-      car_seats: 4,
-      rating: 4.8,
-      title: "John Leason",
-      time: 491,
-      price: "24.50",
-    },
-  ]);
+  const [rides, setRides] = useState<MarkerData[]>([]);
   const [selectedRide, setSelectedRide] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [routeCoords, setRouteCoords] = useState<
+    { latitude: number; longitude: number }[]
+  >([]);
 
   // Markers for the map
   const markers = [
@@ -82,20 +56,49 @@ export default function FindRide() {
     ...rides.map((ride) => ({
       latitude: ride.latitude,
       longitude: ride.longitude,
-      color: "green", // Drivers in green
+      color: "green",
     })),
   ].filter(Boolean) as { latitude: number; longitude: number; color: string }[];
 
-  const handleSearch = async () => {
+  // Fetch available rides
+  const fetchRides = async () => {
     setIsLoading(true);
-    console.log("Searching rides from:", fromAddress, "to:", toAddress);
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(
-      //   `https://your-api.com/rides?from=${encodeURIComponent(fromAddress as string)}&to=${encodeURIComponent(toAddress as string)}`
-      // );
-      // const data = await response.json();
-      // setRides(data);
+      const fullUrl = `${API_URL}/search`;
+      console.log("Fetching rides from:", fullUrl);
+      const response = await axios.get(fullUrl, {
+        params: {
+          origin: fromAddress,
+          destination: toAddress,
+          fromLat: fromLatitude,
+          fromLng: fromLongitude,
+          toLat: toLatitude,
+          toLng: toLongitude,
+        },
+      });
+
+      const rideData = response.data.map((ride: any) => {
+        const departureTime = new Date(ride.departure_time);
+        const now = new Date();
+        const timeDiffMinutes = Math.floor((departureTime - now) / 60000); // Minutes until departure
+
+        return {
+          id: ride.id,
+          first_name: ride.driver_name?.split(" ")[0] || "Unknown",
+          last_name: ride.driver_name?.split(" ")[1] || "Driver",
+          latitude: parseFloat(fromLatitude as string), // Update with DB lat/lng if added
+          longitude: parseFloat(fromLongitude as string),
+          profile_image_url: "https://via.placeholder.com/150", // Add real image if available
+          car_image_url: "https://via.placeholder.com/150",
+          car_seats: ride.available_seats,
+          rating: 4.5, // Fetch from DB or API if available
+          title: ride.driver_name || "Unknown Driver",
+          time: timeDiffMinutes > 0 ? timeDiffMinutes : 0, // Avoid negative times
+          price: Number(ride.price).toFixed(2), // Ensure proper decimal format
+        };
+      });
+
+      setRides(rideData);
     } catch (error) {
       console.error("Error fetching rides:", error);
     } finally {
@@ -103,11 +106,104 @@ export default function FindRide() {
     }
   };
 
+  // Fetch route
+  const fetchRoute = async () => {
+    try {
+      const response = await axios.post(
+        "https://routes.googleapis.com/directions/v2:computeRoutes",
+        {
+          origin: {
+            location: {
+              latLng: {
+                latitude: parseFloat(fromLatitude as string),
+                longitude: parseFloat(fromLongitude as string),
+              },
+            },
+          },
+          destination: {
+            location: {
+              latLng: {
+                latitude: parseFloat(toLatitude as string),
+                longitude: parseFloat(toLongitude as string),
+              },
+            },
+          },
+          travelMode: "DRIVE",
+          routingPreference: "TRAFFIC_AWARE",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": process.env.EXPO_PUBLIC_STATIC_MAPS_KEY || "",
+            "X-Goog-FieldMask": "routes.polyline.encodedPolyline",
+          },
+        },
+      );
+
+      const encodedPolyline = response.data.routes[0]?.polyline?.encodedPolyline;
+      if (encodedPolyline) {
+        const decodedCoords = decodePolyline(encodedPolyline);
+        setRouteCoords(decodedCoords);
+      }
+    } catch (error) {
+      console.error("Error fetching route:", error);
+    }
+  };
+
+  const decodePolyline = (encoded: string) => {
+    let points: { latitude: number; longitude: number }[] = [];
+    let index = 0,
+      len = encoded.length;
+    let lat = 0,
+      lng = 0;
+
+    while (index < len) {
+      let b,
+        shift = 0,
+        result = 0;
+      do {
+        b = encoded.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      let dlat = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
+      lat += dlat;
+
+      shift = 0;
+      result = 0;
+      do {
+        b = encoded.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      let dlng = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
+      lng += dlng;
+
+      points.push({ latitude: lat / 1e5, longitude: lng / 1e5 });
+    }
+    return points;
+  };
+
+  useEffect(() => {
+    if (fromLatitude && fromLongitude && toLatitude && toLongitude) {
+      fetchRoute();
+      fetchRides();
+    }
+  }, [fromLatitude, fromLongitude, toLatitude, toLongitude]);
+
   const handleRideSelection = (rideId: number) => {
     setSelectedRide(rideId);
     router.push({
       pathname: "/(root)/ride-details",
-      params: { rideId: rideId.toString(), fromAddress, toAddress },
+      params: { 
+        rideId: rideId.toString(), 
+        fromAddress, 
+        toAddress,
+        fromLatitude,
+        fromLongitude,
+        toLatitude,
+        toLongitude
+      },
     });
   };
 
@@ -120,29 +216,20 @@ export default function FindRide() {
   );
 
   return (
-    <RideLayout markers={markers} isLoading={isLoading}>
-      <View style={styles.locationContainer} className="flex-row">
-        <Image source={icons.map} className="w-5 h-5 mt-1 mr-2" />
+    <RideLayout markers={markers} routeCoords={routeCoords} isLoading={isLoading}>
+      <View style={styles.locationContainer}>
+        <Image source={icons.map} style={styles.icon} />
         <Text style={styles.locationText}>{fromAddress || "Not set"}</Text>
       </View>
-      <View style={styles.locationContainer} className="flex-row">
-        <Image source={icons.target} className="w-5 h-5 mt-1 mr-2" />
+      <View style={styles.locationContainer}>
+        <Image source={icons.target} style={styles.icon} />
         <Text style={styles.locationText}>{toAddress || "Not set"}</Text>
       </View>
 
-      <TouchableOpacity
-        style={[
-          styles.button,
-          !fromAddress || !toAddress ? styles.buttonDisabled : null,
-        ]}
-        onPress={handleSearch}
-        disabled={!fromAddress || !toAddress}
-      >
-        <Text style={styles.buttonText}>Search Rides</Text>
-      </TouchableOpacity>
-
       {rides.length === 0 ? (
-        <Text style={styles.noRides}>No rides available yet.</Text>
+        <Text style={styles.noRides}>
+          {isLoading ? "Searching for rides..." : "No rides available yet."}
+        </Text>
       ) : (
         <FlatList
           data={rides}
@@ -157,14 +244,9 @@ export default function FindRide() {
 }
 
 const styles = StyleSheet.create({
-  title: {
-    fontSize: 26,
-    fontFamily: "PlusJakartaSans-Bold",
-    color: "#202124",
-    marginBottom: 16,
-    textAlign: "center",
-  },
   locationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "#F9FAFB",
     padding: 12,
     borderRadius: 10,
@@ -172,36 +254,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
   },
-  label: {
-    fontSize: 16,
-    fontFamily: "PlusJakartaSans-Medium",
-    color: "#4B5563",
-    marginBottom: 8,
-  },
   locationText: {
     fontFamily: "PlusJakartaSans-Regular",
     color: "#1F2937",
-  },
-  button: {
-    backgroundColor: "#263238",
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: "center",
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  buttonDisabled: {
-    backgroundColor: "#9CA3AF",
-    opacity: 0.7,
-  },
-  buttonText: {
-    color: "#FFFFFF",
     fontSize: 16,
-    fontFamily: "PlusJakartaSans-Bold",
+    flex: 1,
+  },
+  icon: {
+    width: 20,
+    height: 20,
+    marginRight: 8,
   },
   noRides: {
     fontSize: 16,
