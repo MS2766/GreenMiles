@@ -81,7 +81,7 @@ export default function FindRide() {
       const rideData = response.data.map((ride: any) => {
         const departureTime = new Date(ride.departure_time);
         const now = new Date();
-        const timeDiffMinutes = Math.floor((departureTime - now) / 60000); // Minutes until departure
+        const timeDiffMinutes = Math.floor((departureTime.getTime() - now.getTime()) / 60000); // Minutes until departure
 
         return {
           id: ride.id,
