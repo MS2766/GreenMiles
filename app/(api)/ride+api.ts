@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 // app/(api)/ride+api.ts
 import { neon } from "@neondatabase/serverless";
 
@@ -15,7 +16,7 @@ export async function GET(request: Request) {
     if (!databaseUrl) {
       return new Response(
         JSON.stringify({ error: "Database connection URL is not defined" }),
-        { status: 500 }
+        { status: 500 },
       );
     }
 

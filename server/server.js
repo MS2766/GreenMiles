@@ -31,11 +31,11 @@ app.post("/api/ride", async (req, res) => {
     res.status(201).json({ message: "Ride created successfully", rideId: result[0].id, data: rideData });
   } catch (error) {
     console.error("Error hosting ride:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Failed to host ride. Please try again later." });
   }
 });
 
-// Added GET endpoint
+// GET endpoint for searching rides
 app.get("/api/ride/search", async (req, res) => {
   try {
     const { origin, destination } = req.query;
@@ -44,7 +44,7 @@ app.get("/api/ride/search", async (req, res) => {
       SELECT 
         r.id, r.origin_address, r.destination_address, r.departure_time,
         r.price, r.car_model, r.available_seats, r.phone_number,
-        u.name as driver_name
+        u.name AS driver_name
       FROM rides r
       LEFT JOIN users u ON r.clerk_id = u.clerk_id
       WHERE 
@@ -57,7 +57,37 @@ app.get("/api/ride/search", async (req, res) => {
     res.status(200).json(rides);
   } catch (error) {
     console.error("Error fetching rides:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Failed to fetch rides. Please try again later." });
+  }
+});
+
+// GET endpoint for a specific ride by ID
+app.get("/api/ride/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Validate id is a number
+    const rideId = parseInt(id, 10);
+    if (isNaN(rideId)) {
+      return res.status(400).json({ error: "Invalid ride ID" });
+    }
+
+    const rides = await sql`
+      SELECT 
+        r.id, r.origin_address, r.destination_address, r.departure_time,
+        r.price, r.car_model, r.available_seats, r.phone_number,
+        u.name AS driver_name
+      FROM rides r
+      LEFT JOIN users u ON r.clerk_id = u.clerk_id
+      WHERE r.id = ${rideId} LIMIT 1
+    `;
+    if (rides.length > 0) {
+      res.status(200).json(rides[0]);
+    } else {
+      res.status(404).json({ error: "Ride not found" });
+    }
+  } catch (error) {
+    console.error("Error fetching ride:", error);
+    res.status(500).json({ error: "Failed to fetch ride details. Please try again later." });
   }
 });
 

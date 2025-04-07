@@ -16,7 +16,8 @@ import { MarkerData } from "@/types/type";
 import { icons } from "@/constants";
 import axios from "axios";
 
-const BASE_API_URL = process.env.EXPO_PUBLIC_SERVER_URL || "http://localhost:3000";
+// Update the BASE_API_URL to use your ngrok URL
+const BASE_API_URL = "https://b858-103-208-231-221.ngrok-free.app";
 const API_URL = `${BASE_API_URL}/api/ride`;
 
 export default function FindRide() {
@@ -193,6 +194,7 @@ export default function FindRide() {
 
   const handleRideSelection = (rideId: number) => {
     setSelectedRide(rideId);
+    console.log("Navigating to ride-details with rideId:", rideId); // Debug log
     router.push({
       pathname: "/(root)/ride-details",
       params: { 
