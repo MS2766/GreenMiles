@@ -38,7 +38,7 @@ interface RideData {
 }
 
 // API URL with fallback
-const BASE_API_URL = "https://a23b-120-138-12-230.ngrok-free.app"; // Update this
+const BASE_API_URL = "https://b858-103-208-231-221.ngrok-free.app"; // Update this
 const API_URL = `${BASE_API_URL}/api/ride`;
 
 export default function HostRide() {
