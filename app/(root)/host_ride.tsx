@@ -1,5 +1,4 @@
 /* eslint-disable prettier/prettier */
-// app/(root)/host_ride.tsx
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useLocalSearchParams, router } from "expo-router";
@@ -23,7 +22,6 @@ import React from "react";
 import { useUser } from "@clerk/clerk-expo";
 import Map, { MarkerData } from "@/components/Map";
 import axios from "axios";
-import { fetchAPI } from "@/lib/fetch";
 
 // Define interfaces
 interface RideData {
@@ -34,12 +32,13 @@ interface RideData {
   car: string;
   seats: number;
   phone: string;
-  clerkID: string;
+  email: string; // Changed from clerkID to email
 }
 
 // API URL with fallback
-const BASE_API_URL = "https://raccoon-honest-lively.ngrok-free.app"; // Update this
+const BASE_API_URL = "https://raccoon-honest-lively.ngrok-free.app";
 const API_URL = `${BASE_API_URL}/api/ride`;
+const USERS_API_URL = `${BASE_API_URL}/api/users`;
 
 export default function HostRide() {
   const params = useLocalSearchParams();
@@ -167,7 +166,9 @@ export default function HostRide() {
     if (fromLat && fromLng && toLat && toLng) {
       fetchRoute({ lat: fromLat, lng: fromLng }, { lat: toLat, lng: toLng });
     }
-  }, [fromLatitude, fromLongitude, toLatitude, toLongitude]);
+
+    console.log("Current user:", user);
+  }, [fromLatitude, fromLongitude, toLatitude, toLongitude, user]);
 
   // Date picker handlers
   const showAndroidDatePicker = () => {
@@ -247,8 +248,48 @@ export default function HostRide() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const syncUser = async () => {
+    if (!user || !user.emailAddresses[0]?.emailAddress) {
+      throw new Error("No user email available");
+    }
+
+    try {
+      const response = await fetch(USERS_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          email: user.emailAddresses[0].emailAddress,
+          name: `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || `User_${user.id}`,
+          clerkID: user.id
+        }),
+      });
+
+      const responseData = await response.text();
+      console.log("User sync response:", responseData);
+
+      if (!response.ok) {
+        let errorMessage;
+        try {
+          const errorData = JSON.parse(responseData);
+          errorMessage = errorData.details || errorData.error || "Unknown error";
+        } catch {
+          errorMessage = responseData;
+        }
+        throw new Error(`Failed to sync user: ${errorMessage}`);
+      }
+
+      return JSON.parse(responseData);
+    } catch (error) {
+      console.error("User sync error:", error);
+      throw error;
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!user) {
+    if (!user || !user.emailAddresses[0]?.emailAddress) {
       Alert.alert("Error", "You must be logged in to host a ride");
       return;
     }
@@ -257,19 +298,23 @@ export default function HostRide() {
       return;
     }
 
-    const rideData: RideData = {
-      originAddress: fromAddress as string,
-      destinationAddress: toAddress as string,
-      departureTime: departureTime.toISOString(),
-      price: Number(price),
-      car,
-      seats: Number(seats),
-      phone,
-      clerkID: user.id,
-    };
-
     setIsLoading(true);
     try {
+      // Sync user first
+      await syncUser();
+
+      // Then create the ride
+      const rideData: RideData = {
+        originAddress: fromAddress as string,
+        destinationAddress: toAddress as string,
+        departureTime: departureTime.toISOString(),
+        price: Number(price),
+        car,
+        seats: Number(seats),
+        phone,
+        email: user.emailAddresses[0].emailAddress, // Use email instead of clerkID
+      };
+
       console.log("Submitting to:", API_URL);
       console.log("Request data:", rideData);
 
@@ -277,29 +322,31 @@ export default function HostRide() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json"
+          Accept: "application/json",
         },
         body: JSON.stringify(rideData),
       });
 
+      const responseData = await response.text();
+      console.log("Raw server response:", responseData);
+
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Server response:", errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(
+          `HTTP error! status: ${response.status}, message: ${responseData}`,
+        );
       }
 
-      const result = await response.json();
-      console.log("Response:", result);
+      const result = JSON.parse(responseData);
+      console.log("Parsed response:", result);
 
       Alert.alert("Success", "Ride hosted successfully!", [
         {
           text: "OK",
-          onPress: () => {
+          onPress: () =>
             router.push({
               pathname: "/(root)/(tabs)/rides",
               params: { refresh: "true" },
-            });
-          },
+            }),
         },
       ]);
     } catch (error) {
