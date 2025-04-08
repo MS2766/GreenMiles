@@ -4,7 +4,7 @@ import { Text, SafeAreaView, FlatList, View, StyleSheet } from "react-native";
 import axios from "axios";
 import RideCard from "@/components/RideCard"; // Adjust the import path based on your project structure
 
-const BASE_API_URL = "https://b858-103-208-231-221.ngrok-free.app";
+const BASE_API_URL = "https://raccoon-honest-lively.ngrok-free.app";
 const API_URL = `${BASE_API_URL}/api/ride`;
 
 const Rides = () => {

@@ -17,7 +17,7 @@ import { icons } from "@/constants";
 import axios from "axios";
 
 // Update the BASE_API_URL to use your ngrok URL
-const BASE_API_URL = "https://b858-103-208-231-221.ngrok-free.app";
+const BASE_API_URL = "https://raccoon-honest-lively.ngrok-free.app";
 const API_URL = `${BASE_API_URL}/api/ride`;
 
 export default function FindRide() {
