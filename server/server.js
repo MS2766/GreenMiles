@@ -27,13 +27,11 @@ app.post("/api/user", async (req, res) => {
       });
     }
 
-    // Check if the email already exists in the database
     const existingUser = await sql`
       SELECT id, clerk_id, name, email FROM users WHERE email = ${userData.email}
     `;
 
     if (existingUser.length > 0) {
-      // Update existing user if clerk_id differs or name needs updating
       const currentClerkId = existingUser[0].clerk_id;
       if (currentClerkId !== userData.clerkID || existingUser[0].name !== userData.name) {
         await sql`
@@ -46,7 +44,6 @@ app.post("/api/user", async (req, res) => {
         console.log("No changes needed for user with email:", userData.email);
       }
     } else {
-      // Insert new user if email doesn't exist in database
       const result = await sql`
         INSERT INTO users (clerk_id, name, email)
         VALUES (${userData.clerkID || null}, ${userData.name}, ${userData.email})
@@ -78,7 +75,6 @@ app.post("/api/ride", async (req, res) => {
   console.log("Received ride data:", rideData);
 
   try {
-    // Verify user exists by email
     const user = await sql`
       SELECT clerk_id FROM users WHERE email = ${rideData.email}
     `;
@@ -89,10 +85,8 @@ app.post("/api/ride", async (req, res) => {
       });
     }
 
-    // Use the first clerk_id if multiple exist
     const clerkID = user[0].clerk_id || rideData.clerkID;
 
-    // Validate required fields
     const requiredFields = [
       "email",
       "originAddress",
@@ -111,7 +105,6 @@ app.post("/api/ride", async (req, res) => {
         .json({ error: `Missing required fields: ${missingFields.join(", ")}` });
     }
 
-    // Insert ride into database with the verified clerk_id
     const result = await sql`
       INSERT INTO rides (
         clerk_id,
@@ -149,29 +142,47 @@ app.post("/api/ride", async (req, res) => {
   }
 });
 
-// GET endpoint for searching rides
+// GET endpoint for searching rides (filter by clerk_id for hosted rides)
 app.get("/api/ride/search", async (req, res) => {
   try {
-    const { origin, destination } = req.query;
-    console.log("Search params:", { origin, destination });
-    const rides = await sql`
+    const { origin, destination, clerk_id } = req.query;
+    console.log("Search params:", { origin, destination, clerk_id });
+
+    let query = sql`
       SELECT 
         r.id, r.origin_address, r.destination_address, r.departure_time,
         r.price, r.car_model, r.available_seats, r.phone_number,
         u.name AS driver_name
       FROM rides r
       LEFT JOIN users u ON r.clerk_id = u.clerk_id
-      WHERE 
-        r.origin_address ILIKE ${`%${origin || ""}%`}
-        AND r.destination_address ILIKE ${`%${destination || ""}%`}
-        AND r.departure_time > NOW()
-      ORDER BY r.departure_time ASC
+      WHERE r.departure_time > NOW()
     `;
-    console.log("Rides found:", rides);
+
+    // Apply filters using tagged template literals
+    if (clerk_id) {
+      query = sql`${query} AND r.clerk_id = ${clerk_id}`;
+      console.log(`Filtering rides for clerk_id: ${clerk_id}`);
+    }
+    if (origin) {
+      query = sql`${query} AND r.origin_address ILIKE ${'%' + origin + '%'}`;
+    }
+    if (destination) {
+      query = sql`${query} AND r.destination_address ILIKE ${'%' + destination + '%'}`;
+    }
+
+    query = sql`${query} ORDER BY r.departure_time ASC`;
+
+    console.log("Executing query:", query.text); // Log the final query text
+    const rides = await query;
+    console.log(`Found ${rides.length} rides:`, rides);
+
     res.status(200).json(rides);
   } catch (error) {
-    console.error("Error fetching rides:", error);
-    res.status(500).json({ error: "Failed to fetch rides. Please try again later." });
+    console.error("Error fetching rides:", error.stack || error);
+    res.status(500).json({
+      error: "Failed to fetch rides",
+      details: error.message || "Unknown server error",
+    });
   }
 });
 
@@ -199,9 +210,17 @@ app.get("/api/ride/:id", async (req, res) => {
       res.status(404).json({ error: "Ride not found" });
     }
   } catch (error) {
-    console.error("Error fetching ride:", error);
-    res.status(500).json({ error: "Failed to fetch ride details. Please try again later." });
+    console.error("Error fetching ride:", error.stack || error);
+    res.status(500).json({
+      error: "Failed to fetch ride details. Please try again later.",
+      details: error.message,
+    });
   }
+});
+
+// Add a simple health check endpoint for debugging
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "OK", message: "Server is running" });
 });
 
 app.listen(3000, "0.0.0.0", () => {
